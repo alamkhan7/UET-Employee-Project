@@ -1,0 +1,144 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Add_Employee`(
+									Employee_Code_P int,
+                                    Employee_Name_P varchar(30),
+                                    Father_Name_P varchar(30),
+                                    CNIC_P VARCHAR(13),
+                                    Address_P VARCHAR(100),
+                                    NTN_P varchar(50),
+                                    FIX_P VARCHAR(1),
+                                    Staff_P VARCHAR(1),
+                                    Qualification_ID_P INT,
+                                    Admin_Position_P varchar(15),
+                                    House_P BOOL,
+                                    vehicle_P bool,
+                                    Marital_Status_P bool,
+                                    Join_Date_P date,
+                                    Account_P varchar(20), 
+                                    Department_ID_P int,
+                                    Designation_ID_P int,
+                                    Campus_ID_P int,
+                                    BPS_P int,
+                                    Fixed_Pay_P DECIMAL(7,2)
+                                    
+)
+BEGIN
+
+/* Allowances */
+DECLARE Basic_Pay_MIN_Local FLOAT;
+DECLARE Basic_Pay_MAX_Local FLOAT;
+DECLARE INCR_Local FLOAT;
+DECLARE Personal_Pay_Local FLOAT;
+DECLARE House_Rent_Local FLOAT;
+DECLARE Convence_All_Local FLOAT;
+DECLARE Computer_Allownce_Local FLOAT;
+DECLARE Senior_p_All_Local FLOAT ;
+DECLARE Med_All_Local FLOAT ;
+DECLARE ENT_All_Local FLOAT ;
+DECLARE intgrated_All_Local FLOAT ;
+DECLARE Spec_Add_All_Local FLOAT ;
+DECLARE Orderly_All_Local FLOAT;
+DECLARE Curent_Year INT;
+DECLARE Join_Year INT;
+DECLARE Experience_Year INT;
+DECLARE Teach_All_Local FLOAT;
+DECLARE Brain_Drain_Local FLOAT;
+
+/* Deductions */
+
+
+
+DECLARE Designation_ID_Temp VARCHAR(25);
+
+
+IF Fix_P = 'R' OR Fix_P= 'F' THEN
+	SELECT Basic_Pay_MIN,Basic_Pay_MAX,INCR,Convence_All,Senior_p_All,ENT_All ,Teach_All,Orderly_All
+	  INTO Basic_Pay_MIN_Local,Basic_Pay_MAX_Local, INCR_Local,Convence_All_Local ,Senior_p_All_Local,ENT_All_Local,Teach_All_Local,Orderly_All_Local
+			from Scale WHERE BPS = BPS_P;
+    
+    
+    SET Curent_Year = EXTRACT(YEAR FROM CURRENT_DATE);
+    SET Join_Year = EXTRACT(YEAR FROM Join_Date_P);
+    SET Experience_Year = Curent_Year - Join_Year;
+    
+    
+    SET Personal_Pay_Local = Basic_Pay_MIN_Local + (INCR_Local * Experience_Year);
+		IF Personal_Pay_Local > Basic_Pay_MAX_Local THEN
+			set Personal_Pay_Local = Personal_Pay_Local - Basic_Pay_MAX;
+	END IF;
+
+	
+    IF Campus_ID_P = 1 THEN			select House_Rent_Main into House_Rent_Local from Scale WHERE BPS = BPS_P;
+    else
+		select House_Rent_Remote into House_Rent_Local from Scale WHERE BPS = BPS_P;
+	END IF;
+	
+    
+    IF Staff_P = 'T' THEN			select Computer_Allownces into Computer_Allownce_Local from Qualification WHERE Qualification_ID = Qualification_ID_P;
+    else
+		set Computer_Allownce_Local = 00.00 ;
+	END IF;
+    
+    
+    IF Marital_Status_P = FALSE THEN			SET Med_All_Local = Basic_Pay_MIN_Local * (17.5/100) ;
+        IF Med_All_Local < 1000  THEN
+			SET Med_All_Local = 1000 ;
+		elseif Med_All_Local > 4000  THEN
+			SET Med_All_Local = 4000;
+		END IF;   
+    else
+		SET Med_All_Local = Basic_Pay_MIN_Local * (35/100) ;
+        IF Med_All_Local < 2000  THEN
+			SET Med_All_Local = 2000 ;
+		elseif Med_All_Local > 8320  THEN
+			SET Med_All_Local = 8320;
+		END IF;   
+	END IF;
+
+    
+	SELECT Designation_ID INTO Designation_ID_Temp FROM Designation WHERE Designation = "Driver";
+    IF BPS_P < 4 OR Designation_ID_P = Designation_ID_Temp THEN
+		SET intgrated_All_Local = 300 ;
+	else
+		SET intgrated_All_Local = 00.00;
+	END IF; 
+    
+    
+    IF Staff_P = 'T' AND Campus_ID_P != 1 THEN
+		select Spec_Add_All into Spec_Add_All_Local from Scale WHERE BPS = BPS_P;		
+	else
+		SET Spec_Add_All_Local = 00.00 ;
+	END IF;
+
+    
+    IF Qualification_ID_P = 3 THEN
+		SET Brain_Drain_Local = Basic_Pay_MIN_Local * (40/100);
+    ELSE
+		 SET Brain_Drain_Local = 00.00;
+    END IF;
+    
+  
+    IF Staff_P = 'T' THEN			select Teach_All into Teach_All_Local from Scale WHERE BPS = BPS_P;
+    else
+		set Teach_All_Local = 00.00 ;
+	END IF;
+
+	INSERT into Employee 
+		   VALUES (Employee_Code_P,Employee_Name_P,Father_Name_P,CNIC_P,Address_P,NTN_P,Fix_P,Staff_P,Admin_Position_P,House_P, vehicle_P,Marital_Status_P,Join_Date_P, Account_P,Department_ID_P,Qualification_ID_P, Designation_ID_P,BPS_P, Campus_ID_P);
+	
+    
+    INSERT INTO Allowance (Employee_Code, Basic_Pay,Personal_Pay,Hrent_Sub_All,Convence_All,Computer_All,Senior_p_All,Med_All,ENT_All,intgrated_All,Spec_Add_All,Teach_All,Orderly_All,Brain_Drain) 
+		   VALUES(Employee_Code_P, Basic_Pay_MIN_Local,Personal_Pay_Local,House_Rent_Local,Convence_All_Local,Computer_Allownce_Local,Senior_p_All_Local,Med_All_Local,ENT_All_Local,intgrated_All_Local,Spec_Add_All_Local,Teach_All_Local,Orderly_All_Local,Brain_Drain_Local);
+    
+
+
+
+
+ELSEIF Fix_P= 'N' THEN
+	SET Basic_Pay_MIN_Local = 0;
+	INSERT into Employee VALUES (Employee_Code_P,Employee_Name_P,Father_Name_P,CNIC_P,Address_P,NTN_P,Fix_P,Staff_P,Admin_Position_P,House_P, vehicle_P,Marital_Status_P,Join_Date_P, Account_P,Department_ID_P,Qualification_ID_P, Designation_ID_P,BPS_P, Campus_ID_P);
+	INSERT INTO Allowance (Employee_Code,Basic_Pay,Fixed_Pay) VALUES(Employee_Code_P, Basic_Pay_MIN_Local,Fixed_Pay_P); 
+    
+END IF;
+
+
+END

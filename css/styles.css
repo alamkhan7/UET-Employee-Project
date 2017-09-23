@@ -1,0 +1,7 @@
+.department , .departmentother, .section ,  .position , .qualification{
+    display:none;
+}
+
+body{
+	background-color : #F3FAB6;
+}

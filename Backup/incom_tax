@@ -1,0 +1,32 @@
+    SET Income_Temp = 800000.0 ;
+    
+    IF Income_Temp <= 400000 THEN
+		SET Income_Tax_Local = 0.0 ;
+	ELSEIF Income_Temp > 400000 AND Income_Temp <= 500000 THEN
+		SET Income_Tax_Local = (Income_Temp - 400000) * 0.02 ;
+    ELSEIF Income_Temp > 500000 AND Income_Temp <= 750000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 400000) * 0.05) + 2000 ;
+    ELSEIF Income_Temp > 750000 AND Income_Temp <= 1400000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 750000) * 0.10) + 14500 ;
+    ELSEIF Income_Temp > 1400000 AND Income_Temp <= 1500000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 1400000) * 0.125) + 79500 ;
+    ELSEIF Income_Temp > 1500000 AND Income_Temp <= 1800000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 1500000) * 0.15) + 92000 ;
+    ELSEIF Income_Temp > 1800000 AND Income_Temp <= 2500000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 1800000) * 0.175) + 137000 ;
+    ELSEIF Income_Temp > 2500000 AND Income_Temp <= 3000000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 2500000) * 0.20) + 259500 ;
+    ELSEIF Income_Temp > 3000000 AND Income_Temp <= 3500000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 3000000) * 0.225) + 359500 ;
+    ELSEIF Income_Temp > 3500000 AND Income_Temp <= 4000000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 3500000) * 0.25) + 472000 ;
+    ELSEIF Income_Temp > 4000000 AND Income_Temp <= 7000000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 4000000) * 0.275) + 597000 ;
+    ELSEIF Income_Temp > 7000000 THEN
+		SET Income_Tax_Local = ((Income_Temp - 7000000) * 0.30) + 1422000 ;
+    END IF;
+
+    SET Income_Tax_Local = Income_Tax_Local/12;
+
+
+    
